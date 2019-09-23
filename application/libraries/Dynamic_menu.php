@@ -26,21 +26,29 @@ public function getMenu($parent=0,$hasil){
 		if($h->has_child=='0'){
 			$hasil .= '<li class="m-menu__item  m-menu__item--submenu" aria-haspopup="true" m-menu-submenu-toggle="hover">
 			<a href="'.base_url().$h->url.'" class="m-menu__link ">
-			<i class="m-menu__link-icon flaticon-layers"></i><span class="m-menu__link-text">'.$h->title.'</span>
+				<i class="m-menu__link-icon flaticon-layers"></i><span class="m-menu__link-text">'.$h->title.'</span>
 			</a>
 			<div class="m-menu__submenu "><span class="m-menu__arrow"></span>
 				<ul class="m-menu__subnav">';
 		} else{
-			$hasil .= '<li class="m-menu__item  m-menu__item--submenu" aria-haspopup="true" m-menu-submenu-toggle="hover"><a href="'.base_url().$h->url.'" class="m-menu__link m-menu__toggle">
-			<i class="m-menu__link-icon flaticon-layers"></i><span class="m-menu__link-text">'.$h->title.'</span><i
-				 class="m-menu__ver-arrow la la-angle-right"></i></a>
-			<div class="m-menu__submenu "><span class="m-menu__arrow"></span>
-				<ul class="m-menu__subnav">';
+			$hasil .= '<li class="m-menu__item  m-menu__item--submenu" aria-haspopup="true" m-menu-submenu-toggle="hover">
+						<a href="'.base_url().$h->url.'" class="m-menu__link m-menu__toggle">
+							<i class="m-menu__link-icon flaticon-layers"></i><span class="m-menu__link-text">'.$h->title.'</span><i
+							class="m-menu__ver-arrow la la-angle-right"></i>
+						</a>
+					<div class="m-menu__submenu "><span class="m-menu__arrow"></span>
+						<ul class="m-menu__subnav">';
 		}
-
-
-						$hasil = $this->getMenu($h->id_menu,$hasil);
-
+			// '<li class="m-menu__item m-menu__item--submenu" aria-haspopup="true" m-menu-submenu-toggle="hover"><a href="javascript:;" class="m-menu__link m-menu__toggle"><i class="m-menu__link-icon flaticon-layer"></i><span class="m-menu__link-text">Masters</span><i class="m-menu__ver-arrow la la-angle-right"></i></a>
+			// 	<div class="m-menu__submenu " m-hidden-height="80" style="display: none; overflow: hidden;"><span class="m-menu__arrow"></span>
+			// 		<ul class="m-menu__subnav">
+			// 			<li class="m-menu__item  m-menu__item--parent" aria-haspopup="true"><span class="m-menu__link"><span class="m-menu__link-text">Maps</span></span></li>
+			// 			<li class="m-menu__item " aria-haspopup="true"><a href="../../components/maps/google-maps.html" class="m-menu__link "><i class="m-menu__link-bullet m-menu__link-bullet--dot"><span></span></i><span class="m-menu__link-text">Master users</span></a></li>
+			// 			<li class="m-menu__item " aria-haspopup="true"><a href="../../components/maps/jqvmap.html" class="m-menu__link "><i class="m-menu__link-bullet m-menu__link-bullet--dot"><span></span></i><span class="m-menu__link-text">Master product</span></a></li>
+			// 		</ul>
+			// 	</div>
+			// </li>';
+		$hasil = $this->getMenu($h->id_menu,$hasil);
 		$hasil .= "</li></ul></div>";
 	}
 	
@@ -50,7 +58,7 @@ public function getMenu($parent=0,$hasil){
 	return $hasil;
 } 
 
-public function my_menu(){ 
+public function my_menu(){
     echo $this->getMenu(0,$h="");
 }
 

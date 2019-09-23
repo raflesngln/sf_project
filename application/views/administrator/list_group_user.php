@@ -303,30 +303,39 @@ processing_modal();
    });  
 }
 
+function nonactived_data(pid,is_active){
+			processing();
+			$.ajax({ 
+				type: "POST",  
+				url: "<?php echo site_url('Administrator/nonactive_group_account')?>",  
+				data: {'pid':pid,'is_active':is_active},  
+				dataType:"json",
+				success: function(data) {
+						console.log(data);
+						var kode=data.code;
+						if(kode==1){
+								stop_processing();
+								reload_tbl_status();
+								warning_notify(data.message);
+						} else{
+								stop_processing();
+						}
+				}
+			});
+}
 function nonactive_data(pid,is_active){
-var conf=confirm('Yakin Non-aktif group_account ini ?');
-if(conf){
-		processing();
-		  $.ajax({ 
-			  type: "POST",  
-			  url: "<?php echo site_url('Administrator/nonactive_group_account')?>",  
-			  data: {'pid':pid,'is_active':is_active},  
-			  dataType:"json",
-			  success: function(data) {
-					console.log(data);
-					var kode=data.code;
-					if(kode==1){
-							stop_processing();
-							reload_tbl_status();
-							warning_notify(data.message);
-					} else{
-							stop_processing();
-					}
-			  }
-		  });
+	swal({
+		title:"Sure activation / Non-activation ini ?",
+		text:"activation/non-activation data !",
+		type:"warning",
+		showCancelButton:!0,
+		confirmButtonText:"Yes ! ",
+		cancelButtonText:"No ",
+		reverseButtons:!0}).then(function(e){
+			e.value? nonactived_data(pid,is_active):
+			"cancel"===e.dismiss&& $("#modal_accounts").modal('hide');
+		});
 }
-}
-
 function refresh_data(){
 // alert('aa');
 reload_tbl_status();

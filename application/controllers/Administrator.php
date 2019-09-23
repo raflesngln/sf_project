@@ -108,12 +108,15 @@ public function list_accounts($search_name='',$date1='',$date2=''){
 		'remarks'=>$datalist->remarks,
 		'GroupName'=>$datalist->GroupName,
 		'is_active'=>($datalist->is_active=='1')?'<span class="m-badge m-badge--primary m-badge--wide">Yes</span>':'<span class="m-badge m-badge--danger m-badge--wide">No</span>',
-		'action' =>'<div class="btn-group btn-group-toggle" data-toggle="buttons">
-					<label class="btn btn-success" onclick="edit_data(\''.$datalist->pid.'\')">
+		'action' =>'<div class="btn-group " data-toggle="buttons">
+					<label class="btn btn-sm btn-success" onclick="edit_data(\''.$datalist->pid.'\')">
 						<i class="m-menu__link-icon flaticon-edit" ></i>
 					</label>
-					<label class="btn btn-success" onclick="hapus_data(\''.$datalist->pid.'\')">
-						<i class="m-menu__link-icon flaticon-delete" ></i>
+					<label alt="is active" class="btn btn-sm btn-success" onclick="nonactive_data(\''.$datalist->pid.'\',\''.$datalist->is_active.'\')">
+						<i class="m-menu__link-icon flaticon-refresh" ></i>
+					</label>
+					<label alt="is active" class="btn btn-sm btn-success"  onclick="nonactive_data(\''.$datalist->pid.'\',\''.$datalist->is_active.'\')">
+						<i class="m-menu__link-icon flaticon-paper-plane" ></i>
 					</label>
 				</div>',
 		);
@@ -158,11 +161,11 @@ public function list_group_account($search_name='',$date1='',$date2=''){
 		'CreatedBy'=>$datalist->CreatedBy,
 		'remarks'=>$datalist->remarks,
 		'is_active'=>($datalist->is_active=='1')?'<span class="m-badge m-badge--primary m-badge--wide">Yes</span>':'<span class="m-badge m-badge--danger m-badge--wide">No</span>',
-		'action' =>'<div class="btn-group btn-group-toggle" data-toggle="buttons">
-					<label class="btn btn-success" onclick="edit_data(\''.$datalist->pid.'\')">
+		'action' =>'<div class="btn-group m-stack__item m-stack__item--center" data-toggle="buttons">
+					<label class="btn btn-sm btn-success" onclick="edit_data(\''.$datalist->pid.'\')">
 						<i class="m-menu__link-icon flaticon-edit" ></i>
 					</label>
-					<label alt="is active" class="btn btn-success" onclick="nonactive_data(\''.$datalist->pid.'\',\''.$datalist->is_active.'\')">
+					<label alt="is active" class="btn btn-sm btn-success" onclick="nonactive_data(\''.$datalist->pid.'\',\''.$datalist->is_active.'\')">
 						<i class="m-menu__link-icon flaticon-refresh" ></i>
 					</label>
 				</div>',
@@ -215,12 +218,13 @@ public function list_menu($search_name='',$date1='',$date2=''){
 		'is_active'=>$datalist->is_active,
 		'is_deleted'=>$datalist->is_deleted,
 		'description'=>$datalist->description,
-		'action' =>'<div class="btn-group btn-group-toggle" data-toggle="buttons">
-					<label class="btn btn-success" onclick="edit_data(\''.$datalist->id_menu.'\')">
+		'is_active'=>($datalist->is_active=='1')?'<span class="m-badge m-badge--primary m-badge--wide">Yes</span>':'<span class="m-badge m-badge--danger m-badge--wide">No</span>',
+		'action' =>'<div class="btn-group " data-toggle="buttons">
+					<label class="btn btn-sm btn-success list_menu" onclick="edit_data(\''.$datalist->id_menu.'\')">
 						<i class="m-menu__link-icon flaticon-edit" ></i>
 					</label>
-					<label class="btn btn-success" onclick="hapus_data(\''.$datalist->id_menu.'\')">
-						<i class="m-menu__link-icon flaticon-delete" ></i>
+					<label alt="is active" class="btn btn-sm btn-success list_menu" onclick="nonactive_data(\''.$datalist->id_menu.'\',\''.$datalist->is_active.'\')">
+						<i class="m-menu__link-icon flaticon-refresh" ></i>
 					</label>
 				</div>',
 		);
@@ -364,6 +368,20 @@ function nonactive_group_account(){
 		echo json_encode(array("status" => TRUE,"code"=>'1',"message"=>'Sukses update data!'));   
 	}
 }
+function nonactive_user_account(){
+	$pid=$this->input->post('pid');
+	$is_active=($this->input->post('is_active')=='1')?'0':'1';
+
+	$result=$this->M_master->getCustom('*',"ms_accounts",
+		"WHERE pid='$pid'");
+	if($result){
+		$ubah = array(
+			'is_active'=>$is_active
+		);
+		$updatedata = $this->M_master->update('ms_accounts','pid',$pid,$ubah);
+		echo json_encode(array("status" => TRUE,"code"=>'1',"message"=>'Sukses update data!'));   
+	}
+}
 
 // =========================================================
 public function save_accounts(){
@@ -482,11 +500,11 @@ public function list_company($search_name='',$date1='',$date2=''){
 		'modified_at'=>$datalist->modified_at,
 		'modified_ip'=>$datalist->modified_ip,
 		'modified_device'=>$datalist->modified_device,
-		'action' =>'<div class="btn-group btn-group-toggle" data-toggle="buttons">
-					<label class="btn btn-success" onclick="edit_data(\''.$datalist->pid.'\')">
+		'action' =>'<div class="btn-group " data-toggle="buttons">
+					<label class="btn btn-sm btn-success" onclick="edit_data(\''.$datalist->pid.'\')">
 						<i class="m-menu__link-icon flaticon-edit" ></i>
 					</label>
-					<label class="btn btn-success" onclick="hapus_data(\''.$datalist->pid.'\')">
+					<label class="btn btn-sm btn-success" onclick="hapus_data(\''.$datalist->pid.'\')">
 						<i class="m-menu__link-icon flaticon-delete" ></i>
 					</label>
 				</div>',
@@ -700,7 +718,7 @@ public function send_email_activation($to_email=''){
 		$rows = array(
 			'email_md5'=>$hash_email,
 			'token_md5'=>$gabung_token,
-			'create_date'=>date('Y-m-d : H:i:s'),
+			'create_date'=>date('Y-m-d H:i:s'),
 		);
 		$simpan = $this->M_master->save('tr_email_activation',$rows);
 

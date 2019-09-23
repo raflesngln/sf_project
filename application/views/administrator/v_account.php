@@ -75,7 +75,7 @@ function reload_tbl_status()
 							<div class="m-portlet__head">
 								<div class="m-portlet__head-caption">
 									<div class="m-portlet__head-title">
-											<h3 class="m--font-brand">&nbsp;List accounts </h3>
+											<h3 class="m--font-brand">&nbsp;List accounts ( Users )</h3>
 									</div>
 									
 								</div>
@@ -180,7 +180,7 @@ function reload_tbl_status()
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="accounts_code">password</label>
-										<input type="text" class="form-control" id="password" name="password" required="required">
+										<input type="text" class="form-control" id="password" name="password" >
 									</div>
 								</div>
 								<div class="col-md-6">
@@ -329,6 +329,8 @@ function modal_add_accounts(){
 	$("#labelmodal").html("accounts Baru");
 	$("#password").val('12345');
 	$("#btnsave").html("Simpan accounts");
+	$('#password').attr('required','required');
+	$('#password').removeAttr('placeholder');
 }
 
 function simpan_data(){
@@ -361,6 +363,9 @@ processing_modal();
    }); 
 }
 function edit_data(pid){
+	$("#form_accounts")[0].reset();
+	$('#password').removeAttr('required');
+	$('#password').attr('placeholder','Leave empty if not change password');
 	load_company();
 	load_role_menu();
  $("#modal_accounts").modal({backdrop: 'static',keyboard: false});
@@ -426,28 +431,41 @@ processing_modal();
    });  
 }
 
-function hapus_data(pid){
-var conf=confirm('Yakin Non-aktif accounts ini ?');
-if(conf){
-		processing();
-		  $.ajax({ 
-			  type: "POST",  
-			  url: "<?php echo site_url('master/master/nonactive_accounts')?>",  
-			  data: {'pid':pid},  
-			  dataType:"json",
-			  success: function(data) {
-					console.log(data);
-					var kode=data.code;
-					if(kode==1){
-							stop_processing();
-							reload_tbl_status();
-							warning_notify(data.message);
-					} else{
-							stop_processing();
-					}
-			  }
-		  });
+
+function nonactived_data(pid,is_active){
+			processing();
+			$.ajax({ 
+				type: "POST",  
+				url: "<?php echo site_url('Administrator/nonactive_user_account')?>",  
+				data: {'pid':pid,'is_active':is_active},  
+				dataType:"json",
+				success: function(data) {
+						console.log(data);
+						var kode=data.code;
+						if(kode==1){
+								stop_processing();
+								reload_tbl_status();
+								warning_notify(data.message);
+						} else{
+								stop_processing();
+						}
+				}
+			});
+
 }
+
+function nonactive_data(pid,is_active){
+	swal({
+		title:"Sure activation / Non-activation ini ?",
+		text:"activation/non-activation data !",
+		type:"warning",
+		showCancelButton:!0,
+		confirmButtonText:"Yes ! ",
+		cancelButtonText:"No ",
+		reverseButtons:!0}).then(function(e){
+			e.value? nonactived_data(pid,is_active):
+			"cancel"===e.dismiss&& $("#modal_accounts").modal('hide');
+		});
 }
 
 function refresh_data(){
