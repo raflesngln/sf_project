@@ -332,14 +332,14 @@ processing_modal();
    });  
 }
 
-function hapus_data(pid){
+function hapus_data(pid,is_active){
 var conf=confirm('Yakin Non-aktif company ini ?');
 if(conf){
 		processing();
 		  $.ajax({ 
 			  type: "POST",  
-			  url: "<?php echo site_url('master/master/nonactive_company')?>",  
-			  data: {'pid':pid},  
+			  url: "<?php echo site_url('Administrator/nonactive_company')?>",  
+			  data: {'pid':pid,'is_active':is_active},  
 			  dataType:"json",
 			  success: function(data) {
 					console.log(data);

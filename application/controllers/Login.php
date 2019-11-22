@@ -87,7 +87,7 @@ function activate_user(){
         $diff  = date_diff($waktuawal, $waktuakhir);
 
         if($in_use=='1'){
-            echo json_encode(array('status'=>'failed','code'=>'0','message'=>'Link is expired'));
+            echo 'Link expired or this link has use !';
         } else{
             $resp=array('in_use'=>$in_use,'code'=>'1','message'=>'Success activated','email_md5'=>$email_md5,'token'=>$token);
             // $update_user_active = $this->M_master->update('ms_accounts','md5(username)',$email_md5,['is_active'=>'1']);
@@ -134,7 +134,7 @@ function update_password(){
         "WHERE email_md5='$emailmd5' AND token_md5='$token'");
         if($result){
             if(strlen($pass) < 5 || $pass != $pass2){
-                echo json_encode(array('status'=>'failed','code'=>'0','message'=>'Please input password and its 5 character minimal'));
+                echo json_encode(array('status'=>'failed','code'=>'0','message'=>'Please input password and its 5 character minimal required'));
             } else{
                 $update_user_active = $this->M_master->update('ms_accounts','md5(username)',$emailmd5,['is_active'=>'1']);
                 $update_activate = $this->M_master->update('tr_email_activation','email_md5',$emailmd5,['in_use'=>'1']);
@@ -143,6 +143,105 @@ function update_password(){
         } else{
             echo json_encode(array('status'=>'failed','code'=>'0','message'=>'You not authorized'));
         }
+}
+
+function resend_email_activation(){
+    $this->load->library('email');
+    date_default_timezone_set('Asia/Jakarta');
+    $to_email=$this->input->post('email');
+    // $this->load->library('../controllers/Administrator');
+    
+	$hash_email=md5($to_email);
+	$token_datetime=md5(date("Y-m-d H:i:s"));
+	$gabung_token=$hash_email.'_'.$token_datetime;
+
+		$rows = array(
+			'email_md5'=>$hash_email,
+			'token_md5'=>$gabung_token,
+			'create_date'=>date('Y-m-d H:i:s'),
+		);
+		$simpan = $this->M_master->save('tr_email_activation',$rows);
+
+    $from_email = 'xsysintl.verify@gmail.com';
+    $message ='';
+    $message .='<html>
+                <head>
+                <style>
+
+                h1 {
+                color: #00bcd4;
+                text-align: center;
+                }
+                p {
+                font-family: verdana;
+                font-size: 20px;
+                }
+                .btn_action{
+                    background: red;
+                    height: 30px;
+                    padding: 7px 90px 7px 90px;
+                    color: #f8f8f8 !important;
+                    text-decoration: none;
+                    border-radius: 8px;
+                }
+                .body_email{
+                    text-align: center;
+                    border: 1px #ccc solid;
+                    border-radius: 7px;
+                    padding: 10px 10px 80px 10px;
+                }
+                </style>
+                </head>
+                <body>
+                <div style="text-align:center" class="body_email">
+                <h1>Thank you for signing up</h1>
+                <p>Verify your user account by click button below</p>
+                <hr style="background:#607d8b; width:85%;height:1px">
+                <p>To use our feature system. you must activate your account registered and then login to our system</p>
+                <p>
+                <a href="'.base_url().'Login/activate_user/'.$gabung_token.'" class="btn_action">Activate account</a>
+                </p>
+                </style>
+                </body>
+                </html>';
+
+    $subject='Activation user';
+
+            $config = Array(
+                'protocol' => 'smtp',
+                'smtp_host' => 'ssl://smtp.googlemail.com',
+                'smtp_port' => '465',
+                'smtp_user' => 'xsysintl.verify@gmail.com',
+                'smtp_pass' => 'Xsys1234%',
+                'mailtype'  => 'html', 
+                'charset'   => 'iso-8859-1',
+                // 'smtp_crypto' => 'tls',
+                'wordwrap'  => TRUE,
+                'newline'   => "\r\n",
+                'crlf'   => "\r\n",
+                "validation"=>FALSE,
+                "smtp_timeout"=>'7'
+			);
+            
+			$this->email->initialize($config);
+			$this->email->set_newline("\r\n");
+
+            $this->email->from($from_email,$subject);
+            $this->email->to($to_email); 
+            $this->email->subject("User register - ".$subject);
+
+           $this->email->message($message);  
+            $send = $this->email->send();
+            if($send) {
+				// return true;
+				// echo json_encode("send");
+				echo json_encode(array('status'=>'success','code'=>'1','message'=>'Email activation has send to user !'));
+            } else {
+                $error = $this->email->print_debugger(array('headers'));
+                echo json_encode($error);
+            }
+
+
 }
 
 function logout(){

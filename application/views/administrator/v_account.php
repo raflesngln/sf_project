@@ -11,6 +11,42 @@ span.select2-container {
     z-index:10050 !important;
 }
 
+/*================================================*/
+/*a.tooltips {
+  position: relative;
+  display: inline;
+  text-decoration: none;
+}*/
+a.tooltips span {
+  position: absolute;
+  width:140px;
+  color: #FFFFFF;
+  background: #000000;
+  height: 25px;
+  line-height: 25px;
+  text-align: center;
+  visibility: hidden;
+  border-radius: 5px;
+}
+a.tooltips span:after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -8px;
+  width: 0; height: 0;
+  border-bottom: 8px solid #000000;
+  border-right: 8px solid transparent;
+  border-left: 8px solid transparent;
+}
+a:hover.tooltips span {
+  visibility: visible;
+  opacity: 0.9;
+  top: 30px;
+  left: 50%;
+  margin-left: -76px;
+  z-index: 999;
+}
 </style>
 <link href="<?php echo base_url();?>assets/metronic/vendors/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
 <script src="<?php echo base_url();?>assets/metronic/vendors/custom/datatables/datatables.bundle.js" type="text/javascript"></script>
@@ -41,7 +77,6 @@ span.select2-container {
 			{ "data": "pid"},
 			{ "data": "username"},
             { "data": "email"},
-            { "data": "is_active"},
             { "data": "nm_company"},	
 			{ "data": "GroupName"},
 			{ "data": "is_active"},
@@ -75,7 +110,8 @@ function reload_tbl_status()
 							<div class="m-portlet__head">
 								<div class="m-portlet__head-caption">
 									<div class="m-portlet__head-title">
-											<h3 class="m--font-brand">&nbsp;List accounts ( Users )</h3>
+											<h3 class="m--font-brand">&nbsp;List accounts ( User )</h3>
+
 									</div>
 									
 								</div>
@@ -137,17 +173,15 @@ function reload_tbl_status()
 							</div>
 							
 							<div class="m-portlet__body">
-
 								<!--begin: Datatable -->
 								<table class="table table-striped- table-bordered table-hover table-checkable" id="tbl_status">
 									<thead>
 										<tr>
-
 											<th>no</th>
 											<th>pid</th>
 											<th>username</th>
 											<th>email</th>
-											<th>is_active</th>
+											
 											<th>nm_company</th>
 											<th>GroupName</th>
 											<th>Is Active</th>
@@ -360,9 +394,32 @@ processing_modal();
 		}
 		  // $("#form_accounts").modal('hide');
 		}
-   }); 
+   });
+}
+function resend_email_activation(id,email){
+	var conf=confirm('Resend Email activation ?');
+	if(conf){
+ 			processing();
+			$.ajax({
+				type: "POST",  
+				url: "<?php echo site_url('login/resend_email_activation')?>",  
+				data: {'id':id,'email':email},  
+				dataType:"json",
+				success: function(data) {
+					stop_processing();
+					kode=data.code;
+					if(kode==1) {
+						succes_notify(data.message);
+					} else{
+						warning_notify('error send email');
+					}
+				}
+			});
+		}
 }
 function edit_data(pid){
+	$("#company").empty();
+	$("#role_menu").empty();
 	$("#form_accounts")[0].reset();
 	$('#password').removeAttr('required');
 	$('#password').attr('placeholder','Leave empty if not change password');
@@ -390,6 +447,11 @@ $("#form_accounts")[0].reset();
 						$("#username").val(list[i].username);
 						$("#pid").val(list[i].pid);
 						// $("#password").val(list[i].password);
+						
+				$("#company").append('<option value="'+list[0].id_company+'">'+list[0].nm_company+'</option>');
+				$("#company").append('<option value="'+list[0].id_company+'">'+list[0].nm_company+'</option>');
+			    $("#role_menu").append('<option value="'+list[0].idgroup_user+'">'+list[0].GroupName+'</option>');
+
 						$("#email").val(list[i].email);
 						$("#is_active").val(list[i].is_active);
 						$("#remarks").val(list[i].remarks);

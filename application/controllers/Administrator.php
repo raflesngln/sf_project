@@ -78,9 +78,9 @@ public function list_accounts($search_name='',$date1='',$date2=''){
 
 	if($search_name !=''){
 		// $whername=" AND a.position_title like '%".$search_name."%' ";
-		$kondisi=array('a.username LIKE'=>'%'.$search_name.'%','a.is_active >='=>'0');
+		$kondisi=array('a.username LIKE'=>'%'.$search_name.'%','a.is_active >'=>'0');
 	} else {
-		$kondisi=array('a.is_active >='=>'0');
+		$kondisi=array('a.is_active >'=>'0');
 	}
 
 	$selected='a.*,b.id as id_company,b.name as nm_company,c.GroupName';
@@ -109,16 +109,16 @@ public function list_accounts($search_name='',$date1='',$date2=''){
 		'GroupName'=>$datalist->GroupName,
 		'is_active'=>($datalist->is_active=='1')?'<span class="m-badge m-badge--primary m-badge--wide">Yes</span>':'<span class="m-badge m-badge--danger m-badge--wide">No</span>',
 		'action' =>'<div class="btn-group " data-toggle="buttons">
-					<label class="btn btn-sm btn-success" onclick="edit_data(\''.$datalist->pid.'\')">
-						<i class="m-menu__link-icon flaticon-edit" ></i>
-					</label>
-					<label alt="is active" class="btn btn-sm btn-success" onclick="nonactive_data(\''.$datalist->pid.'\',\''.$datalist->is_active.'\')">
-						<i class="m-menu__link-icon flaticon-refresh" ></i>
-					</label>
-					<label alt="is active" class="btn btn-sm btn-success"  onclick="nonactive_data(\''.$datalist->pid.'\',\''.$datalist->is_active.'\')">
-						<i class="m-menu__link-icon flaticon-paper-plane" ></i>
-					</label>
-				</div>',
+				<label class="btn btn-sm btn-success" onclick="edit_data(\''.$datalist->pid.'\')">
+					<a class="tooltips"><i class="m-menu__link-icon flaticon-edit" ></i><span>Edit </span></a>
+				</label>
+				<label alt="is active" class="btn btn-sm btn-success" onclick="nonactive_data(\''.$datalist->pid.'\',\''.$datalist->is_active.'\')">
+					<a class="tooltips"><i class="m-menu__link-icon flaticon-refresh" ></i><span>Active/Nonactive </span></a>
+				</label>
+				<label alt="is active" class="btn btn-sm btn-success"  onclick="resend_email_activation(\''.$datalist->pid.'\',\''.$datalist->email.'\')">
+					<a class="tooltips"><i class="m-menu__link-icon flaticon-paper-plane" ></i><span>Resend email activation </span></a>
+				</label>
+			</div>',
 		);
 		$data[] = $row;
 	}
@@ -382,10 +382,24 @@ function nonactive_user_account(){
 		echo json_encode(array("status" => TRUE,"code"=>'1',"message"=>'Sukses update data!'));   
 	}
 }
+function nonactive_company(){
+	$pid=$this->input->post('pid');
+	$is_active=($this->input->post('is_active')=='1')?'0':'1';
+
+	$result=$this->M_master->getCustom('*',"ms_companies",
+		"WHERE pid='$pid'");
+	if($result){
+		$ubah = array(
+			'is_active'=>$is_active
+		);
+		$updatedata = $this->M_master->update('ms_companies','pid',$pid,$ubah);
+		echo json_encode(array("status" => TRUE,"code"=>'1',"message"=>'Sukses update data!'));   
+	}
+}
 
 // =========================================================
 public function save_accounts(){
-	$kode_unik=$this->M_master->getCodeCode('ms_accounts','MSCOMP-','id');
+	$kode_unik=$this->M_master->getCodeCode('ms_accounts','MSACCN-','id');
 	// echo $kodeTable;
 
 	// $mirotime = round(microtime(true) * 10);
@@ -414,19 +428,24 @@ public function save_accounts(){
 
 public function detail_accounts(){
 		$pid=$this->input->post('pid');
-		$result=$this->M_master->getCustom('*',"ms_accounts a",
-			"WHERE a.pid='$pid'");
+		$result=$this->M_master->getCustom('a.*,b.id AS id_company,b.name AS nm_company,c.GroupName,c.pid as idgroup',"ms_accounts a",
+			"LEFT JOIN ms_companies b ON a.id_company=b.id
+			LEFT JOIN ms_group_account c ON a.idgroup_user=c.pid
+			WHERE a.pid='$pid'");
 		$row=[];
-		foreach($result as $list){
+		foreach($result as $rw){
 			$list=array(
-				'pid'=>$list->pid,
-				'id'=>$list->id,
-				'username'=>$list->username,
-				'password'=>$list->password,
-				'id_company'=>$list->id_company,
-				'email'=>$list->email,
-				'is_active'=>$list->is_active,
-				'remarks'=>$list->remarks,
+				'pid'=>$rw->pid,
+				'id'=>$rw->id,
+				'username'=>$rw->username,
+				'password'=>$rw->password,
+				'id_company'=>$rw->id_company,
+				'nm_company'=>$rw->nm_company,
+				'idgroup'=>$rw->idgroup,
+				'GroupName'=>$rw->GroupName,
+				'email'=>$rw->email,
+				'is_active'=>$rw->is_active,
+				'remarks'=>$rw->remarks,
 			);
 			$row[]=$list;
 	} 
@@ -462,9 +481,9 @@ public function list_company($search_name='',$date1='',$date2=''){
 
 	if($search_name !=''){
 		// $whername=" AND a.position_title like '%".$search_name."%' ";
-		$kondisi=array('a.name LIKE'=>'%'.$search_name.'%','a.is_active'=>'1');
+		$kondisi=array('a.name LIKE'=>'%'.$search_name.'%','a.is_active >='=>'1');
 	} else {
-		$kondisi=array('a.is_active'=>'1');
+		$kondisi=array('a.is_active >='=>'1');
 	}
 
 	$selected='a.*';
@@ -504,7 +523,7 @@ public function list_company($search_name='',$date1='',$date2=''){
 					<label class="btn btn-sm btn-success" onclick="edit_data(\''.$datalist->pid.'\')">
 						<i class="m-menu__link-icon flaticon-edit" ></i>
 					</label>
-					<label class="btn btn-sm btn-success" onclick="hapus_data(\''.$datalist->pid.'\')">
+					<label class="btn btn-sm btn-success" onclick="hapus_data(\''.$datalist->pid.'\',\''.$datalist->is_active.'\')">
 						<i class="m-menu__link-icon flaticon-delete" ></i>
 					</label>
 				</div>',
@@ -724,11 +743,48 @@ public function send_email_activation($to_email=''){
 
     $from_email = 'xsysintl.verify@gmail.com';
 
-	$message ='<div>
-				<p>click this llink for activation your account</p>
-				<h3><a href="'.base_url().'Login/activate_user/'.$gabung_token.'">Activate now</a></h3>
+    $message ='';
+    $message .='<html>
+                <head>
+                <style>
+
+                h1 {
+                color: #00bcd4;
+                text-align: center;
+                }
+                p {
+                font-family: verdana;
+                font-size: 20px;
+                }
+                .btn_action{
+                    background: red;
+                    height: 30px;
+                    padding: 7px 90px 7px 90px;
+                    color: #f8f8f8 !important;
+                    text-decoration: none;
+                    border-radius: 8px;
+                }
+                .body_email{
+                    text-align: center;
+                    border: 1px #ccc solid;
+                    border-radius: 7px;
+                    padding: 10px 10px 80px 10px;
+                }
+                </style>
+                </head>
+                <body>
+                <div style="text-align:center" class="body_email">
+                <h1>Thank you for signing up</h1>
+                <p>Verify your user account by click button below</p>
+                <hr style="background:#607d8b; width:85%;height:1px">
+                <p>To use our feature system. you must activate your account registered and then login to our system</p>
+                <p>
+                <a href="'.base_url().'Login/activate_user/'.$gabung_token.'" class="btn_action">Activate account</a>
+                </p>
+                </style>
+                </body>
+				</html>';
 				
-				</div>';
     $subject='Activation User';
 
             $config = Array(
@@ -765,11 +821,6 @@ public function send_email_activation($to_email=''){
                 echo json_encode($error);
             }
 }
-
-
-
-
-
 
 	
 }
